@@ -31,7 +31,7 @@ in {
     in {
       hyprland = final.callPackage ./default.nix {
         stdenv = final.gcc13Stdenv;
-        version = "${props.version}+date=${date}_${self.shortRev or "dirty"}";
+        version = "${props.version}-${date}_${self.shortRev or "dirty"}";
         commit = self.rev or "";
         wlroots = final.wlroots-hyprland; # explicit override until decided on breaking change of the name
         udis86 = final.udis86-hyprland; # explicit override until decided on breaking change of the name
