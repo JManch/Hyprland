@@ -134,14 +134,15 @@ void CInputManager::sendMotionEventsToFocused() {
 }
 
 void CInputManager::mouseMoveUnified(uint32_t time, bool refocus) {
-    static auto PFOLLOWMOUSE      = CConfigValue<Hyprlang::INT>("input:follow_mouse");
-    static auto PMOUSEREFOCUS     = CConfigValue<Hyprlang::INT>("input:mouse_refocus");
-    static auto PFOLLOWONDND      = CConfigValue<Hyprlang::INT>("misc:always_follow_on_dnd");
-    static auto PFLOATBEHAVIOR    = CConfigValue<Hyprlang::INT>("input:float_switch_override_focus");
-    static auto PMOUSEFOCUSMON    = CConfigValue<Hyprlang::INT>("misc:mouse_move_focuses_monitor");
-    static auto PRESIZEONBORDER   = CConfigValue<Hyprlang::INT>("general:resize_on_border");
-    static auto PRESIZECURSORICON = CConfigValue<Hyprlang::INT>("general:hover_icon_on_border");
-    static auto PZOOMFACTOR       = CConfigValue<Hyprlang::FLOAT>("cursor:zoom_factor");
+    static auto PFOLLOWMOUSE        = CConfigValue<Hyprlang::INT>("input:follow_mouse");
+    static auto PMOUSEREFOCUS       = CConfigValue<Hyprlang::INT>("input:mouse_refocus");
+    static auto PFOLLOWONDND        = CConfigValue<Hyprlang::INT>("misc:always_follow_on_dnd");
+    static auto PFLOATBEHAVIOR      = CConfigValue<Hyprlang::INT>("input:float_switch_override_focus");
+    static auto PMOUSEFOCUSMON      = CConfigValue<Hyprlang::INT>("misc:mouse_move_focuses_monitor");
+    static auto PRESIZEONBORDER     = CConfigValue<Hyprlang::INT>("general:resize_on_border");
+    static auto PRESIZECURSORICON   = CConfigValue<Hyprlang::INT>("general:hover_icon_on_border");
+    static auto PZOOMFACTOR         = CConfigValue<Hyprlang::FLOAT>("cursor:zoom_factor");
+    static auto PSPECIALFALLTHROUGH = CConfigValue<Hyprlang::INT>("input:special_fallthrough");
 
     const auto  FOLLOWMOUSE = *PFOLLOWONDND && PROTO::data->dndActive() ? 1 : *PFOLLOWMOUSE;
 
@@ -287,7 +288,8 @@ void CInputManager::mouseMoveUnified(uint32_t time, bool refocus) {
 
     // then, we check if the workspace doesnt have a fullscreen window
     const auto PWORKSPACE = PMONITOR->activeWorkspace;
-    if (PWORKSPACE->m_bHasFullscreenWindow && !foundSurface && PWORKSPACE->m_efFullscreenMode == FSMODE_FULLSCREEN) {
+    if (PWORKSPACE->m_bHasFullscreenWindow && !foundSurface && PWORKSPACE->m_efFullscreenMode == FSMODE_FULLSCREEN &&
+        (!*PSPECIALFALLTHROUGH && !PMONITOR->activeSpecialWorkspace)) {
         pFoundWindow = g_pCompositor->getFullscreenWindowOnWorkspace(PWORKSPACE->m_iID);
 
         if (!pFoundWindow) {
@@ -298,9 +300,7 @@ void CInputManager::mouseMoveUnified(uint32_t time, bool refocus) {
 
         const auto PWINDOWIDEAL = g_pCompositor->vectorToWindowUnified(mouseCoords, RESERVED_EXTENTS | INPUT_EXTENTS | ALLOW_FLOATING);
 
-        if (PWINDOWIDEAL &&
-            ((PWINDOWIDEAL->m_bIsFloating && PWINDOWIDEAL->m_bCreatedOverFullscreen) /* floating over fullscreen */
-             || (PMONITOR->activeSpecialWorkspace == PWINDOWIDEAL->m_pWorkspace) /* on an open special workspace */))
+        if (PWINDOWIDEAL && PWINDOWIDEAL->m_bIsFloating && PWINDOWIDEAL->m_bCreatedOverFullscreen)
             pFoundWindow = PWINDOWIDEAL;
 
         if (!pFoundWindow->m_bIsX11) {
