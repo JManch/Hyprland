@@ -2513,7 +2513,7 @@ Vector2D CCompositor::parseWindowVectorArgsRelative(const std::string& args, con
         y          = y.substr(0, y.length() - 1);
     }
 
-    if (!isNumber2(x) || !isNumber2(y)) {
+    if (!isNumber2(x, xIsPercent) || !isNumber2(y, yIsPercent)) {
         Log::logger->log(Log::ERR, "parseWindowVectorArgsRelative: args not numbers");
         return relativeTo;
     }
